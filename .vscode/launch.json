@@ -1,0 +1,14 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Debug with start.sh",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "${workspaceFolder}/chatbot.py",  // Replace with the entry point of your Python program
+            "console": "integratedTerminal",
+            "envFile": "${workspaceFolder}/.env",
+            "preLaunchTask": "run-start-script"
+        }
+    ]
+}

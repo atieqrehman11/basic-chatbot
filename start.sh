@@ -3,8 +3,8 @@
 # Set environment variables
 export ENV=production
 export VIRTUAL_ENV=venv
-export LLM_MODEL=gpt-4o
-export OPENAI_API_KEY=DESIRED_KEY
+export LLM_MODEL="gpt-4o"
+export OPENAI_API_KEY="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"
 
 
 # Create virtual environment

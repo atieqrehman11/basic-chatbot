@@ -1,73 +1,63 @@
 import os
 from ai import getSuggestion
+from prompt import system_prompt
 
 import panel as pn  # GUI
 
-context = [ {'role':'system', 'content':"""
-You are OrderBot, an automated service to collect orders for a pizza restaurant. \
-You first greet the customer according to current day and time and ask about his mood, then collects the order, \
-Make the welcome message more professional keeping in mind the time of the day while saying Good morning/afternoon/evening. \             
-and then asks if it's a pickup or delivery. \
-You wait to collect the entire order, then summarize it and check for a final \
-time if the customer wants to add anything else. \
-If it's a delivery, you ask for an address. \
-Finally you collect the payment.\
-Make sure to clarify all options, extras and sizes to uniquely \
-identify the item from the menu.\
-You respond in a short, very conversational friendly style. \
-The menu includes \
-pepperoni pizza  12.95, 10.00, 7.00 \
-cheese pizza   10.95, 9.25, 6.50 \
-eggplant pizza   11.95, 9.75, 6.75 \
-fries 4.50, 3.50 \
-greek salad 7.25 \
-Toppings: \
-extra cheese 2.00, \
-mushrooms 1.50 \
-sausage 3.00 \
-canadian bacon 3.50 \
-AI sauce 1.50 \
-peppers 1.00 \
-Drinks: \
-coke 3.00, 2.00, 1.00 \
-sprite 3.00, 2.00, 1.00 \
-bottled water 5.00 \
-create a json summary of the previous food order. Itemize the price for each item\
-The fields should be 1) pizza, include size 2) list of toppings 3) list of drinks, include size   4) list of sides include size  5)total price
-"""} ]  # accumulate messages
+context = [ {'role':'system', 'content':system_prompt} ]  # accumulate messages
 
-panels = [] # collect display 
-input = pn.widgets.TextInput(value="Hi", placeholder='Enter text here…')
-button_conversation = pn.widgets.Button(name="Chat!")
+messages = [] # collect display 
 
-def collect_messages(_):
-    prompt = input.value_input
-    input.value = ''
+def send_message(_):
+    prompt = text_input.value_input
+    text_input.value = ''
 
     context.append({'role':'user', 'content':f"{prompt}"})
-    # response = get_completion_from_messages(context) 
+    
+    # get results from LLM
     response = getSuggestion(prompt)
+
+    # append the response to the context
     context.append({'role':'assistant', 'content':f"{response}"})
 
-    panels.append(pn.Row('User:', pn.pane.Markdown(prompt, width=600)))
-    panels.append(pn.Row('Assistant:', pn.pane.Markdown(response, width=600, styles={'background-color': '#F6F6F6'})))
- 
-    return pn.Column(*panels)
+    # update the UI
+    content = "\n\n".join([f"**{entry['role'].capitalize()}:** {entry['content']}" for entry in context])
+    conversation_panel.object = content
+    
+    # Inject JavaScript to scroll to the bottom
+    conversation_panel.param.watch(lambda event: conversation_panel.append(pn.pane.HTML("""
+        <script>
+            var panel = document.querySelector('.conversation-panel');
+            if (panel) {
+                panel.scrollTop = panel.scrollHeight;
+            }
+        </script>
+    """)), 'object')
+   
+# Create conversation panel
+conversation_panel = pn.pane.Markdown("Assistant: How may I help you.\n\n", 
+                                      height=400,
+                                      css_classes=['conversation-panel'])
+conversation_panel.style = {
+    'overflow-y': 'auto',
+    'max-height': 'calc(100vh - 100px)'  # Adjust this value to fit your layout
+}
 
+# Create Chat Box (Input + Button)
+text_input = pn.widgets.TextInput()
+chat_button = pn.widgets.Button(name="Chat!")
+chat_button.on_click(send_message)
+chat_box = pn.Row (text_input, chat_button)
 
-interactive_conversation = pn.bind(collect_messages, button_conversation)
+# Create template to arrange all components
+template = pn.template.FastListTemplate(title='Pizza Order Assistant')
 
-dashboard = pn.Row(
-    pn.Column(
-       
-      pn.panel(interactive_conversation, loading_indicator=True),
-      pn.Row(button_conversation),
-      input)
+# Add the conversation pane to the template's main area
+template.main.append(conversation_panel)
 
-)
+# Add the text input and button to the template's sidebar
+template.main.append(chat_box)
 
-pn.state.template.param.update(title="Pizza Order Assistant")
-pn.extension(sizing_mode="stretch_width", template="fast")
-pn.panel(dashboard).servable()
-
+# Display the template
+template.servable()
 
