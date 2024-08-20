@@ -7,7 +7,7 @@ client = OpenAI()
 
 llmModel = os.environ.get('LLM_MODEL')
 
-def getSuggestion(prompt): 
+def get_suggestion(prompt): 
     messages = [{"role": "user", "content": prompt}]
 
     print("LLM Model: ", llmModel)

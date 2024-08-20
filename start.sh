@@ -3,10 +3,7 @@
 # Set environment variables
 export ENV=production
 export VIRTUAL_ENV=venv
-export LLM_MODEL=gpt-4o
-export OPENAI_API_KEY=DESIRED_KEY
-
-
+export LLM_MODEL="gpt-4o"
 # Create virtual environment
 python3 -m venv $VIRTUAL_ENV
 
