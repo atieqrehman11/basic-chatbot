@@ -4,7 +4,7 @@
 export ENV=production
 export VIRTUAL_ENV=venv
 export LLM_MODEL="gpt-4o"
-export OPENAI_API_KEY=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
+export OPENAI_API_KEY=
 
 # Create virtual environment
 python3 -m venv $VIRTUAL_ENV
